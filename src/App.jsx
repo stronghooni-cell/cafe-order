@@ -14,6 +14,7 @@ import NotFoundPage from "./pages/NotFoundPage.jsx";
 function App() {
   const [cart, setCart] = useState([]);
   const [user, setUser] = useState(null); // 로그인한 사람 — 없으면 null
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     document.title = cart.length > 0 ? `(${cart.length}) 오즈 카페` : "오즈 카페";
@@ -23,6 +24,7 @@ function App() {
     // 로그인 상태가 정해지거나 바뀔 때마다 불림 — 처음 한 번, 로그인 · 로그아웃할 때
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setCheckingAuth(false);
     });
     return unsubscribe; // 화면에서 사라지면 듣기를 멈춤
   }, []);
@@ -37,6 +39,10 @@ function App() {
 
   function handleClear() {
     setCart([]);
+  }
+
+  if (checkingAuth) {
+    return <p role="status" className="p-6 text-stone-500">로그인 상태를 확인하고 있어요.</p>;
   }
 
   return (
