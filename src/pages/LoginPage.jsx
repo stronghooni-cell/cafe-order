@@ -9,38 +9,26 @@ const inputClass =
   "block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 " +
   "focus:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-200";
 
-const authErrorMessages = {
-  "auth/invalid-email": "이메일을 name@example.com 형태로 입력해 주세요.",
-  "auth/weak-password": "비밀번호는 6자 이상으로 입력해 주세요.",
-  "auth/email-already-in-use": "이미 가입한 이메일이에요. 로그인해 주세요.",
-  "auth/invalid-credential": "이메일 또는 비밀번호를 확인해 주세요.",
-  "auth/network-request-failed": "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
-};
-
 // 로그인(/login) — 이메일과 비밀번호로 회원가입 · 로그인
-function LoginPage({ user }) {
+function LoginPage({ user, checking }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(""); // 실패했을 때의 오류 안내
+  const [message, setMessage] = useState(""); // 실패했을 때의 오류 코드
 
+  if (checking) {
+    return <p className="text-stone-500">로그인 상태를 확인하는 중…</p>;
+  }
   if (user) {
     return <Navigate to="/" replace />; // 이미 로그인했으면 메뉴로
   }
 
-  function showError(error) {
-    setMessage(authErrorMessages[error.code] ?? "인증을 완료하지 못했어요. 다시 시도해 주세요.");
-  }
-
   function handleLogin(e) {
     e.preventDefault();
-    setMessage("");
-    signInWithEmailAndPassword(auth, email.trim(), password).catch(showError);
+    signInWithEmailAndPassword(auth, email, password).catch((error) => setMessage(error.code));
   }
 
-  function handleSignUp(e) {
-    setMessage("");
-    if (!e.currentTarget.form.reportValidity()) return;
-    createUserWithEmailAndPassword(auth, email.trim(), password).catch(showError);
+  function handleSignUp() {
+    createUserWithEmailAndPassword(auth, email, password).catch((error) => setMessage(error.code));
   }
 
   return (
@@ -49,18 +37,13 @@ function LoginPage({ user }) {
       <form onSubmit={handleLogin} className="grid gap-3">
         <input
           type="email"
-          aria-label="이메일"
-          required
           className={inputClass}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="이메일 (예: name@example.com)"
+          placeholder="이메일"
         />
         <input
           type="password"
-          aria-label="비밀번호"
-          minLength={6}
-          required
           className={inputClass}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
